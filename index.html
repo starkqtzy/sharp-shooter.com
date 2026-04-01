@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="application-name" content="Elemental Shooter">
+<meta name="apple-mobile-web-app-title" content="Elemental Shooter">
+<title>Elemental Shooter</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="app-icon.svg">
+<link rel="apple-touch-icon" href="app-icon.svg">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="sharp_shooter.css">
+</head>
+<body>        
+
+<!-- CANVAS -->
+<canvas id="gameCanvas"></canvas>
+
+<!-- START SCREEN -->
+<div id="screen-start">
+  <p class="orbitron text-xs tracking-widest opacity-40 text-white mb-4">WAVE SURVIVAL</p>
+  <h1 class="orbitron text-5xl font-black text-white mb-2 tracking-wider" style="text-shadow:0 0 40px rgba(255,150,0,0.6)">ELEMENTAL</h1>
+  <h1 class="orbitron text-5xl font-black mb-10 tracking-wider" style="color:#ff6b35;text-shadow:0 0 40px rgba(255,77,0,0.8)">SHOOTER</h1>
+  <div class="flex gap-6 mb-10 text-white">
+    <div class="text-center"><div style="font-size:28px">🔥</div><div class="text-xs opacity-60 mt-1 orbitron">FIRE</div></div>
+    <div class="text-center"><div style="font-size:28px">❄️</div><div class="text-xs opacity-60 mt-1 orbitron">ICE</div></div>
+    <div class="text-center"><div style="font-size:28px">⚡</div><div class="text-xs opacity-60 mt-1 orbitron">ELEC</div></div>
+  </div>
+  <p class="text-white opacity-50 text-sm mb-1">WASD / Arrow Keys to move</p>
+  <p class="text-white opacity-50 text-sm mb-1">Mouse to aim & shoot</p>
+  <p class="text-white opacity-50 text-sm mb-8">1/2/3 or tap icons to switch elements</p>
+  <button class="big-btn text-black" style="background:linear-gradient(135deg,#ff6b35,#ff2d55)" onclick="startGame()">START GAME</button>
+  <button type="button" id="dl-app-btn" class="dl-app-btn orbitron" onclick="downloadGame(event)">⬇ DOWNLOAD APP</button>
+</div>
+
+<!-- GAME OVER SCREEN -->
+<div id="screen-gameover">
+  <p class="orbitron text-xs tracking-widest opacity-40 text-white mb-6">GAME OVER</p>
+  <h2 class="orbitron text-2xl text-white font-black mb-2">FINAL SCORE</h2>
+  <div id="go-score" class="orbitron text-6xl font-black mb-2" style="color:#ff6b35">0</div>
+  <div id="go-wave" class="orbitron text-sm opacity-50 text-white mb-10">WAVE 1</div>
+  <button class="big-btn text-black" style="background:linear-gradient(135deg,#ff6b35,#ff2d55)" onclick="startGame()">PLAY AGAIN</button>
+</div>
+
+<!-- HUD -->
+<div id="ui-overlay">
+  <div id="hud-top">
+    <!-- HP -->
+    <div id="hp-wrap">
+      <div class="hud-label text-white mb-1">HEALTH</div>
+      <div id="hp-bar-wrap">
+        <div id="hp-bar-bg"><div id="hp-bar" style="width:100%"></div></div>
+      </div>
+      <div id="hp-val" class="hud-val text-white mt-1 orbitron">100</div>
+    </div>
+    <!-- Wave -->
+    <div id="wave-display">
+      <div class="hud-label text-white">WAVE</div>
+      <div id="wave-val" class="hud-val text-white orbitron">1</div>
+    </div>
+    <!-- Score -->
+    <div id="score-display">
+      <div class="hud-label text-white">SCORE</div>
+      <div id="score-val" class="hud-val text-white orbitron">0</div>
+    </div>
+  </div>
+
+  <div id="hud-bottom">
+    <!-- Element selector -->
+    <div id="elem-selector">
+      <div class="elem-btn active-fire" id="btn-fire" onclick="setElement(0)">
+        <span class="elem-icon">🔥</span>
+        <span class="elem-key orbitron text-white">1</span>
+      </div>
+      <div class="elem-btn" id="btn-ice" onclick="setElement(1)">
+        <span class="elem-icon">❄️</span>
+        <span class="elem-key orbitron text-white">2</span>
+      </div>
+      <div class="elem-btn" id="btn-elec" onclick="setElement(2)">
+        <span class="elem-icon">⚡</span>
+        <span class="elem-key orbitron text-white">3</span>
+      </div>
+    </div>
+    <!-- Current element label -->
+    <div id="elem-label" class="orbitron text-xl font-black" style="color:var(--fire)">🔥 FIRE</div>
+  </div>
+</div>
+
+<!-- WAVE ANNOUNCE -->
+<div id="wave-announce"></div>
+<!-- COMBO FLASH -->
+<div id="combo-flash"></div>
+
+<!-- SETTINGS -->
+<button id="settings-btn" onclick="openSettings()" aria-label="Open settings">⚙</button>
+<div id="settings-modal">
+  <div id="settings-card">
+    <div class="orbitron settings-title">SETTINGS</div>
+    <label class="settings-label" for="music-volume">Background Music Volume</label>
+    <input id="music-volume" type="range" min="0" max="100" value="35">
+    <div id="music-volume-val" class="orbitron">35%</div>
+    <div class="settings-actions">
+      <button class="settings-action-btn" onclick="resumeFromSettings()">RESUME GAME</button>
+      <button class="settings-action-btn settings-exit-btn" onclick="exitFromSettings()">EXIT</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADE PANEL -->
+<div id="upgrade-panel">
+  <p class="orbitron text-xs tracking-widest text-white opacity-40 mb-2">WAVE COMPLETE</p>
+  <h2 class="orbitron text-2xl text-white font-black mb-8">CHOOSE UPGRADE</h2>
+  <div id="upgrade-cards" class="flex gap-4 flex-wrap justify-center"></div>
+</div>
+
+<!-- MOBILE CONTROLS -->
+<div id="joystick-zone">
+  <div id="joystick-base"><div id="joystick-thumb"></div></div>
+</div>
+<div id="fire-btn">🔥</div>
+
+<script src="script_function.js"></script>
+</body>
+</html>
